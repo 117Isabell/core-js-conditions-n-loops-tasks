@@ -425,7 +425,6 @@ function rotateMatrix(matrix) {
       temp[i][j] = rotatedMatrix[i][j];
     }
   }
-
   return matrix;
 }
 
@@ -445,19 +444,43 @@ function rotateMatrix(matrix) {
  */
 
 function sortByAsc(arr) {
-  const res = arr;
-  for (let i = 0; i < arr.length - 1; i += 1) {
-    let minIndex = i;
-    for (let j = i + 1; j < arr.length; j += 1) {
-      if (arr[j] < arr[minIndex]) {
-        minIndex = j;
-      }
+  const container = { data: arr };
+
+  function heapify(n, i) {
+    let largest = i;
+    const left = 2 * i + 1;
+    const right = 2 * i + 2;
+
+    if (left < n && container.data[left] > container.data[largest]) {
+      largest = left;
     }
-    const temp = arr[i];
-    res[i] = arr[minIndex];
-    res[minIndex] = temp;
+
+    if (right < n && container.data[right] > container.data[largest]) {
+      largest = right;
+    }
+
+    if (largest !== i) {
+      const temp = container.data[i];
+      container.data[i] = container.data[largest];
+      container.data[largest] = temp;
+      heapify(n, largest);
+    }
   }
-  return res;
+
+  const n = container.data.length;
+
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i -= 1) {
+    heapify(n, i);
+  }
+
+  for (let i = n - 1; i > 0; i -= 1) {
+    const temp = container.data[0];
+    container.data[0] = container.data[i];
+    container.data[i] = temp;
+    heapify(i, 0);
+  }
+
+  return container.data;
 }
 
 /**
