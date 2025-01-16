@@ -351,44 +351,41 @@ function getBalanceIndex(arr) {
  *        ]
  */
 function getSpiralMatrix(size) {
-  const matrix = [];
+  const matrix = new Array(size);
   for (let i = 0; i < size; i += 1) {
-    matrix[i] = [];
-    for (let j = 0; j < size; j += 1) {
-      matrix[i][j] = 0;
-    }
+    matrix[i] = new Array(size);
   }
 
-  let counter = 1;
-  let startRow = 0;
-  let endRow = size - 1;
-  let startCol = 0;
-  let endCol = size - 1;
+  let num = 1;
+  let topRow = 0;
+  let bottomRow = size - 1;
+  let leftCol = 0;
+  let rightCol = size - 1;
 
-  while (startRow <= endRow && startCol <= endCol) {
-    for (let i = startCol; i <= endCol; i += 1) {
-      matrix[startRow][i] = counter;
-      counter += 1;
+  while (num <= size * size) {
+    for (let col = leftCol; col <= rightCol; col += 1) {
+      matrix[topRow][col] = num;
+      num += 1;
     }
-    startRow += 1;
+    topRow += 1;
 
-    for (let i = startRow; i <= endRow; i += 1) {
-      matrix[i][endCol] = counter;
-      counter += 1;
+    for (let row = topRow; row <= bottomRow; row += 1) {
+      matrix[row][rightCol] = num;
+      num += 1;
     }
-    endCol -= 1;
+    rightCol -= 1;
 
-    for (let i = endCol; i >= startCol; i -= 1) {
-      matrix[endRow][i] = counter;
-      counter += 1;
+    for (let col = rightCol; col >= leftCol; col -= 1) {
+      matrix[bottomRow][col] = num;
+      num += 1;
     }
-    endRow -= 1;
+    bottomRow -= 1;
 
-    for (let i = endRow; i >= startRow; i -= 1) {
-      matrix[i][startCol] = counter;
-      counter += 1;
+    for (let row = bottomRow; row >= topRow; row -= 1) {
+      matrix[row][leftCol] = num;
+      num += 1;
     }
-    startCol += 1;
+    leftCol += 1;
   }
 
   return matrix;
@@ -411,20 +408,30 @@ function getSpiralMatrix(size) {
  */
 function rotateMatrix(matrix) {
   const n = matrix.length;
-  const rotatedMatrix = [];
-  const temp = [...matrix];
-  for (let i = 0; i < n; i += 1) {
-    rotatedMatrix[i] = [];
-    for (let j = 0; j < n; j += 1) {
-      rotatedMatrix[i][j] = matrix[n - j - 1][i];
+  const values = [];
+  let i = 0;
+  while (i < n) {
+    values[i] = [];
+    let j = 0;
+    while (j < n) {
+      values[i][j] = matrix[i][j];
+      j += 1;
     }
+    i += 1;
   }
 
-  for (let i = 0; i < n; i += 1) {
-    for (let j = 0; j < n; j += 1) {
-      temp[i][j] = rotatedMatrix[i][j];
+  i = 0;
+  while (i < n) {
+    let j = 0;
+    while (j < n) {
+      Object.defineProperty(matrix[i], j, {
+        value: values[n - 1 - j][i],
+      });
+      j += 1;
     }
+    i += 1;
   }
+
   return matrix;
 }
 
@@ -501,24 +508,45 @@ function sortByAsc(arr) {
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
-  let resultStr = str;
+  const len = str.length;
+  if (len <= 1 || iterations === 0) return str;
 
-  for (let iter = 0; iter < iterations; iter += 1) {
-    let evenChars = '';
-    let oddChars = '';
-
-    for (let i = 0; i < resultStr.length; i) {
+  function singleShuffle(s) {
+    let result = '';
+    for (let i = 0; i < len; i += 1) {
       if (i % 2 === 0) {
-        evenChars += resultStr.charAt(i);
-      } else {
-        oddChars += resultStr.charAt(i);
+        result += s[i];
       }
     }
-
-    resultStr = evenChars + oddChars;
+    for (let i = 0; i < len; i += 1) {
+      if (i % 2 !== 0) {
+        result += s[i];
+      }
+    }
+    return result;
   }
 
-  return resultStr;
+  let currentStr = str;
+  const seenState = {};
+  let cycleStart = -1;
+  let cycleLength = 0;
+
+  for (let i = 0; i < iterations; i += 1) {
+    if (seenState[currentStr] !== undefined) {
+      cycleStart = seenState[currentStr];
+      cycleLength = i - cycleStart;
+      const remaining = (iterations - i) % cycleLength;
+
+      for (let j = 0; j < remaining; j += 1) {
+        currentStr = singleShuffle(currentStr);
+      }
+      return currentStr;
+    }
+    seenState[currentStr] = i;
+    currentStr = singleShuffle(currentStr);
+  }
+
+  return currentStr;
 }
 
 /**
